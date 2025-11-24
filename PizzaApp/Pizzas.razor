@@ -1,0 +1,62 @@
+@page "/pizzas"
+@inject PizzaApp.Services.IPizzaService PizzaService
+
+
+<h3>Pizza Menu</h3>
+
+
+<button class="btn btn-primary" @onclick="ShowAdd">Add Pizza</button>
+
+
+@if (pizzas == null)
+{
+<p><em>Loading...</em></p>
+}
+else
+{
+<table class="table">
+<thead>
+<tr><th>Name</th><th>Price</th><th>Veg</th><th></th></tr>
+</thead>
+<tbody>
+@foreach (var p in pizzas)
+{
+<tr>
+<td>@p.Name</td>
+<td>@p.Price.ToString("C")</td>
+<td>@(p.IsVegetarian ? "Yes" : "No")</td>
+<td>
+<button class="btn btn-sm btn-secondary" @onclick="(()=>Edit(p.Id))">Edit</button>
+<button class="btn btn-sm btn-danger" @onclick="(()=>Delete(p.Id))">Delete</button>
+</td>
+</tr>
+}
+</tbody>
+</table>
+}
+
+
+@code {
+List<PizzaApp.Models.Pizza>? pizzas;
+
+
+protected override async Task OnInitializedAsync()
+{
+pizzas = await PizzaService.GetAllAsync();
+}
+
+
+void ShowAdd() => NavigationManager.NavigateTo("/pizzaform");
+[Inject] NavigationManager NavigationManager { get; set; } = default!;
+
+
+async Task Delete(int id)
+{
+await PizzaService.DeleteAsync(id);
+pizzas = await PizzaService.GetAllAsync();
+StateHasChanged();
+}
+
+
+void Edit(int id) => NavigationManager.NavigateTo($"/pizzaform/{id}");
+}
