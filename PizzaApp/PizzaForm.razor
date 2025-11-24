@@ -1,0 +1,71 @@
+@page "/pizzaform"
+@if (model != null)
+{
+<EditForm Model="model" OnValidSubmit="HandleValidSubmit">
+<DataAnnotationsValidator />
+<ValidationSummary />
+
+
+<div class="mb-3">
+<label>Name</label>
+<InputText class="form-control" @bind-Value="model.Name" />
+</div>
+<div class="mb-3">
+<label>Description</label>
+<InputTextArea class="form-control" @bind-Value="model.Description" />
+</div>
+<div class="mb-3">
+<label>Price</label>
+<InputNumber class="form-control" @bind-Value="model.Price" />
+</div>
+<div class="form-check mb-3">
+<InputCheckbox class="form-check-input" @bind-Value="model.IsVegetarian" />
+<label class="form-check-label">Vegetarian</label>
+</div>
+
+
+<button class="btn btn-primary" type="submit">Save</button>
+<button class="btn btn-secondary" type="button" @onclick="(()=>NavigationManager.NavigateTo("/pizzas"))">Cancel</button>
+</EditForm>
+}
+else
+{
+<p>Loading...</p>
+}
+
+
+@code {
+[Parameter]
+public int? Id { get; set; }
+
+
+PizzaApp.Models.Pizza? model;
+bool isEdit => Id.HasValue;
+
+
+protected override async Task OnInitializedAsync()
+{
+if (isEdit)
+{
+model = await PizzaService.GetByIdAsync(Id!.Value);
+}
+else
+{
+model = new PizzaApp.Models.Pizza();
+}
+}
+
+
+async Task HandleValidSubmit()
+{
+if (isEdit)
+{
+await PizzaService.UpdateAsync(model!);
+}
+else
+{
+await PizzaService.AddAsync(model!);
+}
+NavigationManager.NavigateTo("/pizzas");
+}
+}
